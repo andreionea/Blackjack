@@ -14,25 +14,25 @@ void generateDeck()
 	for (unsigned short i = 0; i < 13; i++)
 	{
 		deck[i].rank = i + 1;
-		strcpy(deck[i].suit, "spades");
+		strcpy_s(deck[i].suit, "spades");
 	}
 
 	for (unsigned short i = 13; i < 26; i++)
 	{
 		deck[i].rank = i - 13 + 1;
-		strcpy(deck[i].suit, "hearts");
+		strcpy_s(deck[i].suit, "hearts");
 	}
 
 	for (unsigned short i = 26; i < 39; i++)
 	{
 		deck[i].rank = i - 26 + 1;
-		strcpy(deck[i].suit, "clubs");
+		strcpy_s(deck[i].suit, "clubs");
 	}
 
 	for (unsigned short i = 39; i < 52; i++)
 	{
 		deck[i].rank = i - 39 + 1;
-		strcpy(deck[i].suit, "diamonds");
+		strcpy_s(deck[i].suit, "diamonds");
 	}
 
 }
@@ -41,6 +41,7 @@ void dealDeck()
 {
 	for (unsigned short i = 0; i < 52; i++)
 	{
+		cout << i << "." << ' ';
 		switch (deck[i].rank)
 		{
 		case 1: cout << "Ace ";
@@ -67,7 +68,7 @@ void cutDeck(unsigned int randomBreak)
 
 	for (unsigned int i = 0; i < randomBreak; i++) insert(front, deck[i]);
 	for (unsigned int i = randomBreak; i < 52; i++) deck[i - randomBreak] = deck[i];
-	for (unsigned int i = 52 - randomBreak + 1; i < 52; i++)
+	for (unsigned int i = 52 - randomBreak; i < 52; i++)
 	{
 		deck[i] = front->card;
 		dismiss(front);
