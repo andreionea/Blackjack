@@ -88,7 +88,7 @@ void riffleShuffle(unsigned int riffleBreak)
 	//or make random tickTock every step
 	//or both...probably both
 
-	bool tickTock = true;
+	bool tickTock = 1;
 	unsigned int i = 0;
 
 	while (front1 != NULL && front2 != NULL)
@@ -109,18 +109,19 @@ void riffleShuffle(unsigned int riffleBreak)
 		i++;
 	}
 
-
 	if (front1 == NULL) 
 	while (front2 != NULL)
 	{
 		deck[i] = front2->card;
 		dismiss(front2);
+		i++;
 	}
 	else
 	while (front1 != NULL)
 	{
 		deck[i] = front1->card;
 		dismiss(front1);
+		i++;
 	}
 
 }
