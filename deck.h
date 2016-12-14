@@ -1,12 +1,32 @@
 #include<iostream>
 using namespace std;
 
+struct card
+{
+	short rank;
+	char suit[9];
+};
+
+bool faceCard(card card)
+{
+	if (card.rank > 10) return true;
+	return false;
+}
+
+struct listNode_card
+{
+	card card;
+	listNode_card* next;
+};
+
 card deck[52];
 
 void generateDeck();
 void dealDeck();
 void cutDeck(unsigned int randomBreak);
 void riffleShuffle(unsigned int riffleBreak);
+void dismiss(listNode_card* &front);
+void insert(listNode_card* &front, card addedCard);
 
 
 void generateDeck()
@@ -124,4 +144,47 @@ void riffleShuffle(unsigned int riffleBreak)
 		i++;
 	}
 
+}
+
+void insert(listNode_card* &front, card addedCard)
+{
+	if (front == NULL)
+	{
+		listNode_card* newNode = new listNode_card;
+		newNode->card = addedCard;
+		newNode->next = NULL;
+		front = newNode;
+	}
+	else
+	{
+		listNode_card* it = new listNode_card;
+		it = front;
+
+		while (it->next != NULL)
+			it = it->next;
+
+		listNode_card* newNode = new listNode_card;
+
+		newNode->card = addedCard;
+		newNode->next = NULL;
+
+		it->next = newNode;
+	}
+}
+
+void dismiss(listNode_card* &front)
+{
+	if (front == NULL) return;
+	if (front->next == NULL) front = NULL;
+	else
+	{
+
+		listNode_card* aux = new listNode_card;
+		aux = front;
+
+		front = front->next;
+
+		aux->next = NULL;
+		delete aux;
+	}
 }
