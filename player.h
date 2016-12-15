@@ -7,6 +7,8 @@ struct player
 	unsigned int bankroll;
 	unsigned int score;
 	unsigned int softScore;
+	unsigned int splitScore;
+	unsigned int splitSoftScore;
 };
 
 void newPlayer(player P)
