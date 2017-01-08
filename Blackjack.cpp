@@ -5,29 +5,6 @@
 #include<random>
 using namespace std;
 
-void showPocket(player P, unsigned int pocketIndex)
-{
-	cout << P.name << ", you hold: | ";
-	for (unsigned int i = 0; i < pocketIndex; i++)
-	{
-		switch (P.pocket[i].rank)
-		{
-		case 11: cout << "Jack" << ' ';
-			break;
-		case 12: cout << "Queen" << ' ';
-			break;
-		case 13: cout << "King" << ' ';
-			break;
-		case 1: cout << "Ace" << ' ';
-			break;
-		default: cout << P.pocket[i].rank << ' ';
-		}
-
-		cout << "of ";
-		cout << P.pocket[i].suit << ' ' << '|' << ' ';
-	}
-}
-
 
 int main(int argc, char* args[])
 {
@@ -71,15 +48,28 @@ int main(int argc, char* args[])
 
 		for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
 
+		player house;
+		house.score = 0;
+
 		unsigned int cardIndex = 0; 
 		unsigned int playerIndex = 0;
+		unsigned int bets[4];
 
-		while (playerIndex <= noOfPlayers)
+		while (playerIndex < noOfPlayers)
 		{
 			bool stand = false;
 			bool splitPossible = false;
 			bool split = false;
 			unsigned int pocketIndex = 0;
+			cout << table[playerIndex].name << ", place your bet! ";
+
+			do
+			{
+				cin >> bets[playerIndex];
+			} 
+			while (bets[playerIndex] > table[playerIndex].bankroll);
+
+			table[playerIndex].bankroll -= bets[playerIndex];
 
 			dealCard(table[playerIndex], cardIndex, pocketIndex);
 			dealCard(table[playerIndex], cardIndex, pocketIndex);
@@ -104,28 +94,52 @@ int main(int argc, char* args[])
 				{
 				case 1: dealCard(table[playerIndex], cardIndex, pocketIndex);
 					break;
-				case 2: stand = true;
+				case 2:
+				{
+					stand = true;
+					if (table[playerIndex].score <= 21)
+					{
+						showPocket(table[playerIndex], pocketIndex);
+						cout << "(SCORE: " << table[playerIndex].score << ')';
+						cout << endl;
+					}
+				}
 					break;
 				case 3:
 					{
 						  dealCard(table[playerIndex], cardIndex, pocketIndex);
+						  
+						  if (table[playerIndex].score <= 21)
+						  {
+							  showPocket(table[playerIndex], pocketIndex);
+							  cout << "(SCORE: " << table[playerIndex].score << ')';
+							  cout << endl;
+						  }
 						  stand = true;
 					}
 					break;
 				}
+
 				if (table[playerIndex].score > 21)
 				{	
 					showPocket(table[playerIndex], pocketIndex);
 					cout << ' ' << "(SCORE: " << ' ' << table[playerIndex].score << ')';
 					cout << endl;
-					cout << table[playerIndex].name << ", you are busted!" << endl;
+					cout << table[playerIndex].name << ", you are busted! (BANKROLL: " <<table[playerIndex].bankroll << ')' << endl;
+					bets[playerIndex] = 0;
 				}
+
 				system("pause");
 			}
 
-			
+			system("cls");
 			playerIndex++;
 		}
+
+		bool allPlayersBust = false;
+		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = 0;
+
+		if(!allPlayersBust) housePlay(house, cardIndex);
 		system("pause");
 	}
 
