@@ -5,12 +5,27 @@
 #include<random>
 using namespace std;
 
-void dealCard(player &P, unsigned int &cardIndex, unsigned int &pocketIndex)
+void showPocket(player P, unsigned int pocketIndex)
 {
-	P.pocket[pocketIndex] = deck[cardIndex];
-	P.score = P.score + P.pocket[pocketIndex].rank;
-	pocketIndex++;
-	cardIndex++;
+	cout << P.name << ", you hold: | ";
+	for (unsigned int i = 0; i < pocketIndex; i++)
+	{
+		switch (P.pocket[i].rank)
+		{
+		case 11: cout << "Jack" << ' ';
+			break;
+		case 12: cout << "Queen" << ' ';
+			break;
+		case 13: cout << "King" << ' ';
+			break;
+		case 1: cout << "Ace" << ' ';
+			break;
+		default: cout << P.pocket[i].rank << ' ';
+		}
+
+		cout << "of ";
+		cout << P.pocket[i].suit << ' ' << '|' << ' ';
+	}
 }
 
 
@@ -59,44 +74,58 @@ int main(int argc, char* args[])
 		unsigned int cardIndex = 0; 
 		unsigned int playerIndex = 0;
 
-		while (playerIndex < noOfPlayers)
+		while (playerIndex <= noOfPlayers)
 		{
 			bool stand = false;
+			bool splitPossible = false;
 			bool split = false;
 			unsigned int pocketIndex = 0;
 
 			dealCard(table[playerIndex], cardIndex, pocketIndex);
 			dealCard(table[playerIndex], cardIndex, pocketIndex);
 
-			while (stand == false || bust(table[playerIndex]) == false)
+			while (stand == false && bust(table[playerIndex]) == false)
 			{
-				cout << table[playerIndex].name << ", you hold: | ";
-				for (unsigned int i = 0; i < pocketIndex; i++)
+				showPocket(table[playerIndex], pocketIndex);
+				cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
+				if (pocketIndex == 2)
 				{
-					switch (table[playerIndex].pocket[i].rank)
-					{
-					case 11: cout << "Jack" << ' ';
-						break;
-					case 12: cout << "Queen" << ' ';
-						break;
-					case 13: cout << "King" << ' ';
-						break;
-					case 1: cout << "Ace" << ' ';
-						break;
-					default: cout << table[playerIndex].pocket[i].rank << ' ';
-					}
-
-					cout << "of ";
-					cout << table[playerIndex].pocket[i].suit <<' ' <<  '|' << ' ';
+					if (table[playerIndex].pocket[0].rank == table[playerIndex].pocket[1].rank) splitPossible = true;
+					cout << "your options: | 1. Hit | 2. Stand | 3. Double Down |";
+					if (splitPossible) cout << " 4. Split |";
 				}
 
-				cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
-				cout << "your options: | 1. Hit | 2. Stand |";
+				else cout << "your options: | 1. Hit | 2. Stand |";
 				cout << endl;
+				unsigned short option;
+				cin >> option;
+
+				switch (option)
+				{
+				case 1: dealCard(table[playerIndex], cardIndex, pocketIndex);
+					break;
+				case 2: stand = true;
+					break;
+				case 3:
+					{
+						  dealCard(table[playerIndex], cardIndex, pocketIndex);
+						  stand = true;
+					}
+					break;
+				}
+				if (table[playerIndex].score > 21)
+				{	
+					showPocket(table[playerIndex], pocketIndex);
+					cout << ' ' << "(SCORE: " << ' ' << table[playerIndex].score << ')';
+					cout << endl;
+					cout << table[playerIndex].name << ", you are busted!" << endl;
+				}
 				system("pause");
 			}
-		}
 
+			
+			playerIndex++;
+		}
 		system("pause");
 	}
 
