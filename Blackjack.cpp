@@ -18,42 +18,44 @@ int main(int argc, char* args[])
 
 	system("pause");
 
+
+	cout << "Shuffling deck..." << endl;
+
+	random_device rd;
+
+	int firstBreak = rd() % 22 + 15;
+	int secondBreak = rd() % 22 + 15;
+	int riffleBreak = rd() % 22 + 15;
+
+	for (unsigned int count = 0; count <= 2; count++)
+	{
+		cutDeck(firstBreak);
+		cutDeck(secondBreak);
+		riffleShuffle(riffleBreak);
+	}
+
+	unsigned int noOfPlayers;
+
+	do
+	{
+		cout << "How many players? (max. 4) ";
+		cin >> noOfPlayers;
+	} while (noOfPlayers < 1 || noOfPlayers > 4);
+
+	for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
+
+	player house;
+	house.score = 0;
+
+	unsigned int cardIndex = 0;
+	unsigned int playerIndex = 0;
+	unsigned int bets[4];
+
+
 	while (!quit)
 	{
 
 		system("cls");
-
-		cout << "Shuffling deck..." << endl;
-
-		random_device rd;
-
-		int firstBreak = rd() % 22 + 15;
-		int secondBreak = rd() % 22 + 15; 
-		int riffleBreak = rd() % 22 + 15;
-
-		for (unsigned int count = 0; count <= 2; count++)
-		{
-			cutDeck(firstBreak);
-			cutDeck(secondBreak);
-			riffleShuffle(riffleBreak);
-		}
-
-		unsigned int noOfPlayers;
-
-		do
-		{
-			cout << "How many players? (max. 4) ";
-			cin >> noOfPlayers;
-		} while (noOfPlayers < 1 || noOfPlayers > 4);
-
-		for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
-
-		player house;
-		house.score = 0;
-
-		unsigned int cardIndex = 0; 
-		unsigned int playerIndex = 0;
-		unsigned int bets[4];
 
 		while (playerIndex < noOfPlayers)
 		{
@@ -75,7 +77,14 @@ int main(int argc, char* args[])
 			dealCard(table[playerIndex], cardIndex, pocketIndex);
 			dealCard(table[playerIndex], cardIndex, pocketIndex);
 
-			while (stand == false && bust(table[playerIndex]) == false)
+			if (table[playerIndex].score == 21)
+			{
+				cout << "BLACKJACK!!!!";
+				table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
+				table[playerIndex].skip = true;
+			}
+
+			while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
 			{
 				showPocket(table[playerIndex], pocketIndex);
 				cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
@@ -143,6 +152,13 @@ int main(int argc, char* args[])
 		{
 			system("cls");
 			housePlay(house, cardIndex);
+
+			if (bust(house)) for (unsigned int i = 0; i < noOfPlayers; i++) 
+			if (bets[i]) table[i].bankroll += 2 * bets[i];
+			else;
+
+			else
+
 			for (unsigned int i = 0; i < noOfPlayers; i++)
 			if (bets[i])
 			if (table[i].score > house.score)
