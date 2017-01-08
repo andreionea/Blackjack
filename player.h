@@ -36,4 +36,72 @@ void resetScore(player P)
 	P.softScore = 0;
 }
 
+void dealCard(player &P, unsigned int &cardIndex, unsigned int &pocketIndex)
+{
+	P.pocket[pocketIndex] = deck[cardIndex];
+	if (faceCard(deck[cardIndex])) P.score = P.score + 10;
+	else P.score = P.score + P.pocket[pocketIndex].rank;
+	pocketIndex++;
+	cardIndex++;
+}
+
+void showPocket(player P, unsigned int pocketIndex)
+{
+	cout << P.name << ", you hold: | ";
+	for (unsigned int i = 0; i < pocketIndex; i++)
+	{
+		switch (P.pocket[i].rank)
+		{
+		case 11: cout << "Jack" << ' ';
+			break;
+		case 12: cout << "Queen" << ' ';
+			break;
+		case 13: cout << "King" << ' ';
+			break;
+		case 1: cout << "Ace" << ' ';
+			break;
+		default: cout << P.pocket[i].rank << ' ';
+		}
+
+		cout << "of ";
+		cout << P.pocket[i].suit << ' ' << '|' << ' ';
+	}
+}
+
+void housePlay(player &house, unsigned int &cardIndex)
+{
+	unsigned int pocketIndex = 0;
+
+	while (house.score < 17)
+	{
+		dealCard(house, cardIndex, pocketIndex);
+		cout << "House holds: | ";
+		for (unsigned int i = 0; i < pocketIndex; i++)
+		{
+			switch (house.pocket[i].rank)
+			{
+			case 1: cout << "Ace ";
+				break;
+			case 11: cout << "Jack ";
+				break;
+			case 12: cout << "Queen ";
+				break;
+			case 13:
+				cout << "King ";
+				break;
+			default:
+				cout << house.pocket[i].rank << ' ';
+			}
+
+			cout << "of ";
+			cout << house.pocket[i].suit << ' ' << '|' << ' ';
+		}
+
+		cout << "(SCORE: " << house.score << ") " << endl;
+	}
+}
+
+
+
+
 player table[4];
