@@ -57,6 +57,7 @@ int main(int argc, char* args[])
 
 		while (playerIndex < noOfPlayers)
 		{
+			system("cls");
 			bool stand = false;
 			bool splitPossible = false;
 			bool split = false;
@@ -132,14 +133,38 @@ int main(int argc, char* args[])
 				system("pause");
 			}
 
-			system("cls");
 			playerIndex++;
 		}
 
-		bool allPlayersBust = false;
-		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = 0;
+		bool allPlayersBust = true;
+		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = false;
 
-		if(!allPlayersBust) housePlay(house, cardIndex);
+		if (!allPlayersBust)
+		{
+			system("cls");
+			housePlay(house, cardIndex);
+			for (unsigned int i = 0; i < noOfPlayers; i++)
+			if (bets[i])
+			if (table[i].score > house.score)
+			{
+				cout << table[i].name << " (" << table[i].score <<"), you win! CONGRATULATIONS!!! ";
+				table[i].bankroll = table[i].bankroll + 2 * bets[i];
+				cout << "(BANKROLL: " << table[i].bankroll << ')' << endl;
+			}
+
+			else if (table[i].score == house.score)
+			{
+				cout << table[i].name << ", that's a push! ";
+				table[i].bankroll += bets[i];
+				cout << "(BANKROLL: " << table[i].bankroll << endl;
+			}
+
+			else
+				cout << table[i].name << " (" << table[i].score << ") you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
+
+			else cout << table[i].name << ", you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
+		}
+
 		system("pause");
 	}
 
