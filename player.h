@@ -10,6 +10,7 @@ struct player
 	unsigned int splitScore;
 	unsigned int splitSoftScore;
 	card pocket[9];
+	bool skip;
 };
 
 void newPlayer(player &P)
@@ -22,6 +23,7 @@ void newPlayer(player &P)
 
 	P.score = 0;
 	P.softScore = 0;
+	P.skip = false;
 }
 
 bool bust(player P)
