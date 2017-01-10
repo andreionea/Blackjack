@@ -5,113 +5,154 @@
 #include<random>
 using namespace std;
 
+void play(unsigned int noOfPlayers, player P[4], bool &quit);
+void dealCard(player currentPlayer, unsigned int &cardIndex);
+void showPocket(player currentPlayer, unsigned int pocketIndex, unsigned int seat);
 
 int main(int argc, char* args[])
 {
 	system("color a");
 
-	bool quit = false;
+	unsigned int seat = 0;
 
-	cout << "Generating deck..." << endl;
-	generateDeck();
-	cout << "Deck generated!" << endl;
+	while (seat < 4)
+	{
+		cout << "Add player? (y/n) ";
+		char answer;
+		cin >> answer;
+
+		if (answer == 'y')
+		{
+			player new_player;
+			new_player.bankroll = 0;
+			new_player.score = 0;
+			new_player.softScore = 0;
+			new_player.splitScore = 0;
+			new_player.splitSoftScore = 0;
+			newPlayer(new_player);
+			P[seat] = new_player;
+			seat++;
+		}
+
+		else break;
+
+	}
+
+	bool quit;
+
+	if (seat)
+	{
+		cout << "Generating deck..." << endl;
+		generateDeck();
+		cout << "Deck generated!" << endl;
+		quit = false;
+	}
 
 	system("pause");
 
-
-	cout << "Shuffling deck..." << endl;
-	shuffleDeck();
-	cout << "Deck shuffled!..." << endl;
-
-	unsigned int noOfPlayers;
-
-	addPlayers(noOfPlayers);
-
-	player house;
-	house.score = 0;
-
-	unsigned int cardIndex = 0;
-	unsigned int playerIndex = 0;
-	unsigned int bets[4];
-
+START:
 
 	while (!quit)
 	{
 
 		system("cls");
 
-		while (playerIndex < noOfPlayers)
+		cout << "Shuffling deck..." << endl;
+
+		random_device rd;
+
+		int firstBreak = rd() % 22 + 15; 
+		int secondBreak = rd() % 22 + 15;
+		int riffleBreak = rd() % 22 + 15;
+
+		for (unsigned int count = 0; count <= 2; count++)
 		{
-			system("cls");
-
-			bool stand = false;
-			bool splitPossible = false;
-			bool split = false;
-			unsigned int pocketIndex = 0;
-
-			cout << table[playerIndex].name << ", place your bet! ";
-			checkValidInput_bet(bets[playerIndex], table[playerIndex].bankroll);
-
-			table[playerIndex].bankroll -= bets[playerIndex];
-
-			dealCard(table[playerIndex], cardIndex, pocketIndex);
-			dealCard(table[playerIndex], cardIndex, pocketIndex);
-
-			if (table[playerIndex].score == 21)
-			{
-				cout << "BLACKJACK!!!!";
-				table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
-				table[playerIndex].skip = true;
-			}
-
-			while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
-			{
-
-			BEGIN_HAND:
-
-				showPocket(table[playerIndex], pocketIndex);
-				cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
-
-				getOption(table[playerIndex], pocketIndex, splitPossible);
-
-				unsigned short option;
-				cin >> option;
-
-				if(!processOption(option, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
-
-				if (table[playerIndex].score > 21)
-				{
-					showPocket(table[playerIndex], pocketIndex);
-					cout << ' ' << "(SCORE: " << ' ' << table[playerIndex].score << ')';
-					cout << endl;
-					cout << table[playerIndex].name << ", you are busted! (BANKROLL: " << table[playerIndex].bankroll << ')' << endl;
-					bets[playerIndex] = 0;
-				}
-
-				system("pause");
-			}
-
-			playerIndex++;
+			cutDeck(firstBreak);
+			cutDeck(secondBreak);
+			riffleShuffle(riffleBreak);
 		}
 
-		bool allPlayersBust = true;
-		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = false;
+		cout << "Deck shuffled!" << endl;
 
-		if (!allPlayersBust)
-		{
-			system("cls");
-
-			housePlay(house, cardIndex);
-
-			showdown(table, house, bets, noOfPlayers);
-
-		}
-
-		for (unsigned int i = 0; i < noOfPlayers; i++) resetScore(table[i]);
-		playerIndex = 0;
+		play(seat, P, quit);
 
 		system("pause");
 	}
 
 	return 0;
 }
+
+
+void play(unsigned int noOfPlayers, player P[4], bool &quit)
+{
+	unsigned int seat = 0;
+	unsigned int cardIndex = 0;
+
+	while (seat < noOfPlayers)
+	{
+		unsigned int pocketIndex = 0;
+
+		dealCard(P[seat], cardIndex); pocketIndex++;
+		if (faceCard(P[seat].pocket[pocketIndex])) P[seat].score += 10;
+		else P[seat].score += P[seat].pocket[pocketIndex].rank;
+		
+
+		dealCard(P[seat], cardIndex); pocketIndex++;
+		if (faceCard(P[seat].pocket[pocketIndex])) P[seat].score += 10;
+		else P[seat].score += P[seat].pocket[pocketIndex].rank;
+		
+
+		showPocket(P[seat], pocketIndex, seat);
+
+		if (P[seat].score == 21)
+		{
+			cout << "BLACKJACK!!!" << endl;
+			P[seat].bankroll += P[seat].bankroll;
+		}
+
+		else
+		{
+			if ((P[seat].pocket[pocketIndex - 1].rank == P[seat].pocket[pocketIndex].rank) && (P[seat].pocket[pocketIndex - 1].suit == P[seat].pocket[pocketIndex].suit))
+			{
+				cout << P[seat].name << ", split? (y/n)" << endl;
+			}
+		}
+
+		seat = 8;
+	}
+
+	quit = true;
+}
+
+void dealCard(player currentPlayer, unsigned int &cardIndex)
+{
+	currentPlayer.pocket[cardIndex] = deck[cardIndex];
+	cardIndex++;
+}
+
+
+void showPocket(player currentPlayer, unsigned int pocketIndex, unsigned int seat)
+{
+	cout << currentPlayer.name << ", you hold: ";
+	for (unsigned int i = 0; i < pocketIndex; i++)
+	{
+		switch (currentPlayer.pocket[i].rank)
+		{
+		case 1: cout << "Ace of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		case 11: cout << "Jack of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		case 12: cout << "Queen of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		case 13: cout << "King of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		default: cout << currentPlayer.pocket[i].rank << ' ' << "of" << ' ' << currentPlayer.pocket[i].suit << ' ';
+		}	
+
+		if (i != pocketIndex - 1) cout << ',' << ' ';
+	}
+	cout <<' ' << '(' << currentPlayer.score << ')';
+	cout << endl;
+}
+
+
