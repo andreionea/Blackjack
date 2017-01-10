@@ -103,7 +103,118 @@ void housePlay(player &house, unsigned int &cardIndex)
 	}
 }
 
-
-
-
 player table[4];
+
+void playerStand(bool &stand, player P, unsigned int pocketIndex)
+{
+	stand = true;
+
+	if (P.score <= 21)
+	{
+		showPocket(P, pocketIndex);
+		cout << "(SCORE: " << P.score << ')';
+		cout << endl;
+	}
+}
+
+void playerDoubleDown(player &P, unsigned int bets[4], unsigned int playerIndex, unsigned int pocketIndex, unsigned int &cardIndex, bool &stand)
+{
+	dealCard(P, cardIndex, pocketIndex);
+
+	P.bankroll = P.bankroll - bets[playerIndex];
+	bets[playerIndex] = 2 * bets[playerIndex];
+
+
+	if (P.score <= 21)
+	{
+		showPocket(P, pocketIndex);
+		cout << "(SCORE: " << P.score << ')';
+		cout << endl;
+	}
+
+	stand = true;
+}
+
+
+
+bool processOption(unsigned short option, player P, unsigned int bets[4], unsigned int &cardIndex, unsigned int &pocketIndex, unsigned int playerIndex, bool &stand)
+{
+	switch (option)
+	{
+		case 1: dealCard(table[playerIndex], cardIndex, pocketIndex);
+			break;
+
+		case 2: playerStand(stand, table[playerIndex], pocketIndex);
+			break;
+
+		case 3:
+			{
+			  if (table[playerIndex].bankroll < bets[playerIndex])
+			  {
+				  cout << "Not enough money for a double down!" << endl;
+				  return false;
+			  }
+
+			  playerDoubleDown(table[playerIndex], bets, playerIndex, pocketIndex, cardIndex, stand);
+			}
+			break;
+
+		default:
+		{
+			   cout << "Invalid option! " << endl;
+			   return false;
+		}
+
+	}
+
+	return true;
+}
+
+void showdown(player table[4], player house, unsigned int bets[4], unsigned int noOfPlayers)
+{
+	if (bust(house))
+	{
+		cout << "House is busted!" << endl;
+		for (unsigned int i = 0; i < noOfPlayers; i++)
+		if (bets[i])
+		{
+			table[i].bankroll += 2 * bets[i];
+			cout << table[i].name << ", you won! (BANKROLL: " << table[i].bankroll << ')' << endl;
+		}
+	}
+
+	else
+
+	for (unsigned int i = 0; i < noOfPlayers; i++)
+	if (bets[i])
+	{
+		if (table[i].score == house.score)
+		{
+			cout << table[i].name << ", that's a push! ";
+			table[i].bankroll += bets[i];
+			cout << "(BANKROLL: " << table[i].bankroll << endl;
+		}
+
+		else if (table[i].score > house.score)
+		{
+			cout << table[i].name << " (" << table[i].score << "), you win! CONGRATULATIONS!!! ";
+			table[i].bankroll = table[i].bankroll + 2 * bets[i];
+			cout << "(BANKROLL: " << table[i].bankroll << ')' << endl;
+		}
+
+		else cout << table[i].name << " (" << table[i].score << ") you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
+	}
+
+	else cout << table[i].name << ", you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
+}
+
+void addPlayers(unsigned int &noOfPlayers)
+{
+	do
+	{
+		cout << "How many players? (max. 4) ";
+		cin >> noOfPlayers;
+	} while (noOfPlayers < 1 || noOfPlayers > 4);
+
+	for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
+}

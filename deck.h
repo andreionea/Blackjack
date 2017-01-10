@@ -1,4 +1,5 @@
 #include<iostream>
+#include<random>
 using namespace std;
 
 struct card
@@ -144,6 +145,22 @@ void riffleShuffle(unsigned int riffleBreak)
 		i++;
 	}
 
+}
+
+void shuffleDeck()
+{
+	random_device rd;
+
+	int firstBreak = rd() % 22 + 15;
+	int secondBreak = rd() % 22 + 15;
+	int riffleBreak = rd() % 22 + 15;
+
+	for (unsigned int count = 0; count <= 2; count++)
+	{
+		cutDeck(firstBreak);
+		cutDeck(secondBreak);
+		riffleShuffle(riffleBreak);
+	}
 }
 
 void insert(listNode_card* &front, card addedCard)

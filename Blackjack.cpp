@@ -5,69 +5,6 @@
 #include<random>
 using namespace std;
 
-void playerStand(bool &stand, player P, unsigned int pocketIndex)
-{
-	stand = true;
-
-	if (P.score <= 21)
-	{
-		showPocket(P, pocketIndex);
-		cout << "(SCORE: " << P.score << ')';
-		cout << endl;
-	}
-}
-
-void playerDoubleDown(player &P, unsigned int bets[4], unsigned int playerIndex, unsigned int pocketIndex, unsigned int &cardIndex, bool &stand)
-{
-	dealCard(P, cardIndex, pocketIndex);
-
-	P.bankroll = P.bankroll - bets[playerIndex];
-	bets[playerIndex] = 2 * bets[playerIndex];
-
-
-	if (P.score <= 21)
-	{
-		showPocket(P, pocketIndex);
-		cout << "(SCORE: " << P.score << ')';
-		cout << endl;
-	}
-
-	stand = true;
-}
-
-bool processOption(unsigned short option, player P, unsigned int bets[4], unsigned int &cardIndex, unsigned int &pocketIndex, unsigned int playerIndex, bool &stand)
-{
-	switch (option)
-	{
-	case 1: dealCard(table[playerIndex], cardIndex, pocketIndex);
-		break;
-
-	case 2: playerStand(stand, table[playerIndex], pocketIndex);
-		break;
-
-	case 3:
-		{
-			  if (table[playerIndex].bankroll < bets[playerIndex])
-			  {
-				  cout << "Not enough money for a double down!" << endl;
-				  return false;
-			  }
-
-			  playerDoubleDown(table[playerIndex], bets, playerIndex, pocketIndex, cardIndex, stand);
-		}
-		break;
-
-	default:
-		{
-			   cout << "Invalid option! " << endl;
-			   return false;
-		}
-
-	}
-
-	return true;
-}
-
 int main(int argc, char* args[])
 {
 	system("color a");
@@ -82,29 +19,12 @@ int main(int argc, char* args[])
 
 
 	cout << "Shuffling deck..." << endl;
-
-	random_device rd;
-
-	int firstBreak = rd() % 22 + 15;
-	int secondBreak = rd() % 22 + 15;
-	int riffleBreak = rd() % 22 + 15;
-
-	for (unsigned int count = 0; count <= 2; count++)
-	{
-		cutDeck(firstBreak);
-		cutDeck(secondBreak);
-		riffleShuffle(riffleBreak);
-	}
+	shuffleDeck();
+	cout << "Deck shuffled!..." << endl;
 
 	unsigned int noOfPlayers;
 
-	do
-	{
-		cout << "How many players? (max. 4) ";
-		cin >> noOfPlayers;
-	} while (noOfPlayers < 1 || noOfPlayers > 4);
-
-	for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
+	addPlayers(noOfPlayers);
 
 	player house;
 	house.score = 0;
@@ -133,6 +53,7 @@ int main(int argc, char* args[])
 			do
 			{
 				cin >> bets[playerIndex];
+				if (bets[playerIndex] > table[playerIndex].bankroll) cout << "You don't have that much money! Please enter a valid bet. " << endl;
 			} while (bets[playerIndex] > table[playerIndex].bankroll);
 
 			table[playerIndex].bankroll -= bets[playerIndex];
@@ -194,40 +115,8 @@ int main(int argc, char* args[])
 
 			housePlay(house, cardIndex);
 
-			if (bust(house))
-			{
-				cout << "House is busted!" << endl;
-				for (unsigned int i = 0; i < noOfPlayers; i++)
-				if (bets[i])
-				{
-					table[i].bankroll += 2 * bets[i];
-					cout << table[playerIndex].name << ", you won! (BANKROLL: " << table[playerIndex].bankroll << ')' << endl;
-				}
-			}
+			showdown(table, house, bets, noOfPlayers);
 
-			else
-
-			for (unsigned int i = 0; i < noOfPlayers; i++)
-			if (bets[i])
-			{
-				if (table[i].score == house.score)
-				{
-					cout << table[i].name << ", that's a push! ";
-					table[i].bankroll += bets[i];
-					cout << "(BANKROLL: " << table[i].bankroll << endl;
-				}
-
-				else if (table[i].score > house.score)
-				{
-					cout << table[i].name << " (" << table[i].score << "), you win! CONGRATULATIONS!!! ";
-					table[i].bankroll = table[i].bankroll + 2 * bets[i];
-					cout << "(BANKROLL: " << table[i].bankroll << ')' << endl;
-				}
-
-				else cout << table[i].name << " (" << table[i].score << ") you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
-			}
-
-			else cout << table[i].name << ", you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
 		}
 
 		system("pause");
