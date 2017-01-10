@@ -1,6 +1,9 @@
 ﻿#include<iostream>
 using namespace std;
 
+void checkValidInput_bet(unsigned int &input, unsigned int bankroll);
+void checkValidInput_buyIn(unsigned int &bankroll);
+
 struct player
 {
 	char name[30];
@@ -17,8 +20,8 @@ void newPlayer(player &P)
 {
 	cout << "New player's name: " << endl;
 	cin >> P.name;
-	cout << "How much would you like to buy-in for, " << P.name << "?" << endl;
-	cin >> P.bankroll;
+	cout << "How much would you like to buy-in for, " << P.name << "? (min. 50, max. 5000) " << endl;
+	checkValidInput_buyIn(P.bankroll);
 	cout << "Good luck, " << P.name << "!" << endl;
 
 	P.score = 0;
@@ -217,4 +220,63 @@ void addPlayers(unsigned int &noOfPlayers)
 	} while (noOfPlayers < 1 || noOfPlayers > 4);
 
 	for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
+}
+
+void checkValidInput_bet(unsigned int &input, unsigned int bankroll)
+{
+	bool ok;
+
+	do
+	{
+		ok = true;
+		cin >> input;
+
+		if (std::cin.fail())
+		{
+			cout << "Bad entry! Please enter a valid bet: ";
+			ok = false;
+			std::cin.clear();
+			std::cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+		}
+
+		else if (input > bankroll) cout << "You do not have that much money! " << endl << "Please enter a valid bet: ";
+		else if (input < 1) cout << "Must bet at least 1! ";
+
+	} while (ok == false || input < 1 || input > bankroll);
+
+}
+
+void checkValidInput_buyIn(unsigned int &bankroll)
+{
+	bool ok;
+
+	do
+	{
+		ok = true;
+		cin >> bankroll;
+
+		if (std::cin.fail())
+		{
+			cout << "Bad entry! Please enter a number between 50 and 5000: ";
+			ok = false;
+			std::cin.clear();
+			std::cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
+		}
+
+		else if (bankroll < 50 || bankroll > 5000) cout << "Please enter a number between 50 and 5000: ";
+
+	} while (ok == false || bankroll < 50 || bankroll > 5000);
+}
+
+void getOption(player P, unsigned int pocketIndex, bool splitPossible)
+{
+	if (pocketIndex == 2)
+	{
+		if (P.pocket[0].rank == P.pocket[1].rank) splitPossible = true;
+		cout << "your options: | 1. Hit | 2. Stand | 3. Double Down |";
+		if (splitPossible) cout << " 4. Split |";
+	}
+
+	else cout << "your options: | 1. Hit | 2. Stand |";
+	cout << endl;
 }

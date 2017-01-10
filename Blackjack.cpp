@@ -5,6 +5,7 @@
 #include<random>
 using namespace std;
 
+
 int main(int argc, char* args[])
 {
 	system("color a");
@@ -49,12 +50,7 @@ int main(int argc, char* args[])
 			unsigned int pocketIndex = 0;
 
 			cout << table[playerIndex].name << ", place your bet! ";
-
-			do
-			{
-				cin >> bets[playerIndex];
-				if (bets[playerIndex] > table[playerIndex].bankroll) cout << "You don't have that much money! Please enter a valid bet. " << endl;
-			} while (bets[playerIndex] > table[playerIndex].bankroll);
+			checkValidInput_bet(bets[playerIndex], table[playerIndex].bankroll);
 
 			table[playerIndex].bankroll -= bets[playerIndex];
 
@@ -76,15 +72,7 @@ int main(int argc, char* args[])
 				showPocket(table[playerIndex], pocketIndex);
 				cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
 
-				if (pocketIndex == 2)
-				{
-					if (table[playerIndex].pocket[0].rank == table[playerIndex].pocket[1].rank) splitPossible = true;
-					cout << "your options: | 1. Hit | 2. Stand | 3. Double Down |";
-					if (splitPossible) cout << " 4. Split |";
-				}
-
-				else cout << "your options: | 1. Hit | 2. Stand |";
-				cout << endl;
+				getOption(table[playerIndex], pocketIndex, splitPossible);
 
 				unsigned short option;
 				cin >> option;
