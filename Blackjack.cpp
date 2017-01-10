@@ -107,6 +107,9 @@ int main(int argc, char* args[])
 
 		}
 
+		for (unsigned int i = 0; i < noOfPlayers; i++) resetScore(table[i]);
+		playerIndex = 0;
+
 		system("pause");
 	}
 
