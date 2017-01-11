@@ -22,6 +22,7 @@ START:
 	initializeTable(table);
 
 	system("pause");
+	system("cls");
 
 	unsigned int noOfPlayers;
 
@@ -116,6 +117,8 @@ START:
 			housePlay(house, cardIndex);
 
 			showdown(table, house, bets, noOfPlayers);
+
+			system("pause");
 		}
 
 		for (unsigned int i = 0; i < noOfPlayers; i++)
@@ -125,12 +128,22 @@ START:
 		}
 
 		for (unsigned int i = 0; i < noOfPlayers; i++) 
-		if (table[i].bankroll == 0 && table[i].skip == false) removePlayer(table, i, noOfPlayers);
+		if (table[i].bankroll == 0 && table[i].skip == false)
+		{
+			REBUY:
+			cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | ";
+			unsigned int answer;
+			cin >> answer;
+			if (answer == 2) removePlayer(table, i, noOfPlayers);
+			else if (answer == 1)
+			{
+				cout << "How much would you like to rebuy for? (min. 50, max. 5000) ";
+				checkValidInput_buyIn(table[i].bankroll);
+			}
+		}
 
 		playerIndex = 0;
 		cardIndex = 0;
-
-		cout << isTableEmpty(table) << endl;
 
 		if (isTableEmpty(table))
 		{

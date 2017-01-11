@@ -107,14 +107,14 @@ void housePlay(player &house, unsigned int &cardIndex)
 
 player table[4];
 
-player emptySeat(unsigned int playerIndex, player table[4])
+void emptySeat(unsigned int playerIndex, player table[4])
 {
 	table[playerIndex].bankroll = 0;
 	strcpy_s(table[playerIndex].name, " **empty seat** ");
 	for (unsigned int i = 0; i < 9; i++)
 	{
 		table[playerIndex].pocket[i].rank = 0;
-		strcpy(table[playerIndex].pocket[i].suit, "*");
+		strcpy_s(table[playerIndex].pocket[i].suit, "*");
 	}
 	table[playerIndex].score = 0;
 	table[playerIndex].softScore = 0;
@@ -122,12 +122,11 @@ player emptySeat(unsigned int playerIndex, player table[4])
 	table[playerIndex].splitSoftScore = 0;
 	table[playerIndex].skip = true;
 
-	return table[playerIndex];
 }
 
 void initializeTable(player table[4])
 {
-	for (unsigned int i = 0; i < 4; i++) table[i] = emptySeat(i, table);
+	for (unsigned int i = 0; i < 4; i++) emptySeat(i, table);
 }
 
 void playerStand(bool &stand, player P, unsigned int pocketIndex)
@@ -307,19 +306,19 @@ void getOption(player P, unsigned int pocketIndex, bool splitPossible)
 
 bool isSeatEmpty(player table[4], unsigned int playerIndex)
 {
-	if (table[playerIndex].name != " **empty seat** ") return true;
-	return false;
+	if (strcmp(table[playerIndex].name, " **empty seat** ") == 0) return true;
+	else return false;
 }
 
 bool isTableEmpty(player table[4])
 {
-	for (unsigned int i = 0; i < 4; i++) if (!isSeatEmpty(table, i)) return false;
+	for (unsigned int i = 0; i < 4; i++) if (isSeatEmpty(table, i) == false) return false;
 	return true;
 }
 
 void removePlayer(player table[4], unsigned int playerIndex, unsigned int &noOfPlayers)
 {
 	cout << "REMOVING PLAYER " << table[playerIndex].name << endl;
-	table[playerIndex] = emptySeat(playerIndex, table);
+	emptySeat(playerIndex, table);
 	cout << "PLAYER REMOVED " << endl;
 }
