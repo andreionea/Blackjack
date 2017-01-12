@@ -1,8 +1,11 @@
 ﻿#include<iostream>
+#include<string.h>
 using namespace std;
 
 void checkValidInput_bet(unsigned int &input, unsigned int bankroll);
-void checkValidInput_buyIn(unsigned int &bankroll);
+void checkValidInput_buyIn(string &bankroll);
+inline bool isInteger(const std::string & s);
+
 struct player
 {
 	char name[30];
@@ -18,9 +21,12 @@ struct player
 void newPlayer(player &P)
 {
 	cout << "New player's name: " << endl;
-	cin >> P.name;
+	cin.get();
+	cin.get(P.name, 30);
 	cout << "How much would you like to buy-in for, " << P.name << "? (min. 50, max. 5000) " << endl;
-	checkValidInput_buyIn(P.bankroll);
+	string answer;
+	checkValidInput_buyIn(answer);
+	P.bankroll = stoi(answer);
 	cout << "Good luck, " << P.name << "!" << endl;
 
 	P.score = 0;
@@ -161,7 +167,7 @@ void playerDoubleDown(player &P, unsigned int bets[4], unsigned int playerIndex,
 
 
 
-bool processOption(unsigned short option, player P, unsigned int bets[4], unsigned int &cardIndex, unsigned int &pocketIndex, unsigned int playerIndex, bool &stand)
+bool processOption(unsigned int option, player P, unsigned int bets[4], unsigned int &cardIndex, unsigned int &pocketIndex, unsigned int playerIndex, bool &stand)
 {
 	switch (option)
 	{
@@ -233,69 +239,172 @@ void showdown(player table[4], player house, unsigned int bets[4], unsigned int 
 	else cout << table[i].name << ", you lose! (BANKROLL: " << table[i].bankroll << ')' << endl;
 }
 
-void addPlayers(unsigned int &noOfPlayers)
+void addPlayers(string &noOfPlayers)
 {
+	bool ok;
+	int noOfPlayers_number;
+
 	do
 	{
+		ok = true;
+
 		cout << "How many players? (max. 4) ";
 		cin >> noOfPlayers;
-	} while (noOfPlayers < 1 || noOfPlayers > 4);
 
-	for (unsigned int i = 0; i < noOfPlayers; i++) newPlayer(table[i]);
-}
-
-void checkValidInput_bet(unsigned int &input, unsigned int bankroll)
-{
-	bool ok;
-
-	do
-	{
-		ok = true;
-		cin >> input;
-
-		if (std::cin.fail())
+		if (!isInteger(noOfPlayers))
 		{
-			cout << "Bad entry! Please enter a valid bet: ";
+			cout << "Bad input! " << endl;
 			ok = false;
-			std::cin.clear();
-			std::cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 		}
 
-		else if (input > bankroll) 
-		cout << "You do not have that much money! Your bankroll: " << bankroll << endl << "Please enter a valid bet: ";
-		else if (input < 1) cout << "Must bet at least 1! ";
+		if (ok == true)
+		{
+			noOfPlayers_number = stoi(noOfPlayers);
 
-	} while (ok == false || input < 1 || input > bankroll);
+			if (noOfPlayers_number > 4)
+			{
+				cout << "Maximum 4 players! " << endl;
+				ok = false;
+			}
 
+			else if (noOfPlayers_number < 1)
+			{
+				cout << "Must have at least one player! " << endl;
+				ok = false;
+			}
+		}
+
+	} while (ok == false);
+
+	for (unsigned int i = 0; i < noOfPlayers_number; i++) newPlayer(table[i]);
 }
 
-void checkValidInput_buyIn(unsigned int &bankroll)
+inline bool isInteger(const std::string & s)
+{
+	if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+	char * p;
+	strtol(s.c_str(), &p, 10);
+
+	return (*p == 0);
+}
+
+
+void checkValidInput_bet(string &bet, unsigned int bankroll)
 {
 	bool ok;
 
 	do
 	{
 		ok = true;
+
+		cin >> bet;
+
+		if (!isInteger(bet))
+		{
+			cout << "Please enter a valid bet: ";
+			ok = false;
+		}
+
+		if (ok == true)
+		{
+			int bet_number = stoi(bet);
+
+			if (bet_number < 1)
+			{
+				cout << "Bet must be at least 1! ";
+				cout << "Please enter a valid bet: ";
+				ok = false;
+			}
+
+			if (bet_number > bankroll)
+			{
+				cout << "You do not have that much money! (BANKROLL: " << bankroll << ") " << endl;
+				cout << "Please enter a valid bet: ";
+				ok = false;
+			}
+		}
+	} while (ok == false);
+
+}
+
+void checkValidInput_buyIn(string &bankroll)
+{
+	bool ok;
+
+	do
+	{
+		ok = true;
+
 		cin >> bankroll;
 
-		if (std::cin.fail())
+		if (isInteger(bankroll) == false)
 		{
-			cout << "Bad entry! Please enter a number between 50 and 5000: ";
+			cout << "Bad input! Please enter a number: ";
 			ok = false;
-			std::cin.clear();
-			std::cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 		}
 
-		else if (bankroll < 50 || bankroll > 5000) cout << "Please enter a number between 50 and 5000: ";
+		if (ok == true)
+		{
+			int bankroll_number = stoi(bankroll);
 
-	} while (ok == false || bankroll < 50 || bankroll > 5000);
+			if (bankroll_number < 50 || bankroll_number > 5000)
+			{
+				cout << "Please enter a number between 50 and 5000: ";
+				ok = false;
+			}
+		}
+
+	} while (ok == false);
+}
+
+void checkValidInput_option(string &option, unsigned int pocketIndex, bool splitPossible)
+{
+	bool ok;
+
+	do
+	{
+		ok = true;
+		cin >> option;
+
+		if (pocketIndex == 2)
+		{
+			if (option.length() > 1)
+			{
+				cout << "Bad input! Please re-enter option: ";
+				ok = false;
+			}
+
+			else if (option.compare("1") != 0 && option.compare("2") != 0 && option.compare("3") != 0)
+			{
+				if (splitPossible && option.compare("4"))
+				{
+					cout << "Split not yet supported... :( " << endl;
+					ok = false;
+				}
+				else
+				{
+					cout << "Bad input! Please re-enter option: ";
+					ok = false;
+				}
+			}
+
+			else ok = true;
+		}
+
+		else if (option.compare("1") != 0 && option.compare("2") != 0)
+		{
+			cout << "Bad input! Please re-enter option: ";
+			ok = false;
+		}
+
+	} while (ok == false);
 }
 
 void getOption(player P, unsigned int pocketIndex, bool splitPossible)
 {
 	if (pocketIndex == 2)
 	{
-		if (P.pocket[0].rank == P.pocket[1].rank) splitPossible = true;
 		cout << "your options: | 1. Hit | 2. Stand | 3. Double Down |";
 		if (splitPossible) cout << " 4. Split |";
 	}

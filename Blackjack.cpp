@@ -1,5 +1,6 @@
 #include<iostream>
 #include<string.h>
+#include<string>
 #include "deck.h"
 #include "player.h"
 #include<random>
@@ -8,7 +9,7 @@ using namespace std;
 
 int main(int argc, char* args[])
 {
-	system("color a");
+	system("color 0F");
 	system("cls");
 
 START:
@@ -25,8 +26,10 @@ START:
 	system("cls");
 
 	unsigned int noOfPlayers;
+	string noOfPlayers_dummy;
 
-	addPlayers(noOfPlayers);
+	addPlayers(noOfPlayers_dummy);
+	noOfPlayers = stoi(noOfPlayers_dummy);
 
 	player house;
 	house.score = 0;
@@ -53,56 +56,61 @@ START:
 		{
 			system("cls");
 
-			if (table[playerIndex].skip == true) goto PLAYER_SKIPPED;
-
-			bool stand = false;
-			bool splitPossible = false;
-			bool split = false;
-			unsigned int pocketIndex = 0;
-
-			cout << table[playerIndex].name << ", place your bet! ";
-			checkValidInput_bet(bets[playerIndex], table[playerIndex].bankroll);
-
-			table[playerIndex].bankroll -= bets[playerIndex];
-
-			dealCard(table[playerIndex], cardIndex, pocketIndex);
-			dealCard(table[playerIndex], cardIndex, pocketIndex);
-
-			if (table[playerIndex].score == 21)
+			if (table[playerIndex].skip == false)
 			{
-				cout << "BLACKJACK!!!!";
-				table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
-				table[playerIndex].skip = true;
-			}
+				bool stand = false;
+				bool splitPossible = false;
+				bool split = false;
+				unsigned int pocketIndex = 0;
 
-			while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
-			{
+				cout << table[playerIndex].name << ", place your bet! ";
 
-			BEGIN_HAND:
+				string bet;
+				checkValidInput_bet(bet, table[playerIndex].bankroll);
+				bets[playerIndex] = stoi(bet);
 
-				showPocket(table[playerIndex], pocketIndex);
-				cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
+				table[playerIndex].bankroll -= bets[playerIndex];
 
-				getOption(table[playerIndex], pocketIndex, splitPossible);
+				dealCard(table[playerIndex], cardIndex, pocketIndex);
+				dealCard(table[playerIndex], cardIndex, pocketIndex);
 
-				unsigned short option;
-				cin >> option;
+				if (table[playerIndex].pocket[0].rank == table[playerIndex].pocket[1].rank) splitPossible = true;
 
-				if(!processOption(option, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
-
-				if (table[playerIndex].score > 21)
+				if (table[playerIndex].score == 21)
 				{
-					showPocket(table[playerIndex], pocketIndex);
-					cout << ' ' << "(SCORE: " << ' ' << table[playerIndex].score << ')';
-					cout << endl;
-					cout << table[playerIndex].name << ", you are busted! (BANKROLL: " << table[playerIndex].bankroll << ')' << endl;
-					bets[playerIndex] = 0;
+					cout << "BLACKJACK!!!!";
+					table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
+					table[playerIndex].skip = true;
 				}
 
-				system("pause");
+				while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
+				{
+
+				BEGIN_HAND:
+
+					showPocket(table[playerIndex], pocketIndex);
+					cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
+
+					getOption(table[playerIndex], pocketIndex, splitPossible);
+
+					string option;
+					checkValidInput_option(option, pocketIndex, splitPossible);
+					unsigned int option_number = stoi(option);
+
+					if (!processOption(option_number, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
+
+					if (table[playerIndex].score > 21)
+					{
+						showPocket(table[playerIndex], pocketIndex);
+						cout << ' ' << "(SCORE: " << ' ' << table[playerIndex].score << ')';
+						cout << endl;
+						cout << table[playerIndex].name << ", you are busted! (BANKROLL: " << table[playerIndex].bankroll << ')' << endl;
+						bets[playerIndex] = 0;
+					}
+
+					system("pause");
+				}
 			}
-		
-		PLAYER_SKIPPED:
 
 			playerIndex++;
 		}
@@ -127,18 +135,23 @@ START:
 			resetScore(house);
 		}
 
-		for (unsigned int i = 0; i < noOfPlayers; i++) 
+		for (unsigned int i = 0; i < noOfPlayers; i++)
 		if (table[i].bankroll == 0 && table[i].skip == false)
 		{
-			REBUY:
-			cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | ";
-			unsigned int answer;
-			cin >> answer;
-			if (answer == 2) removePlayer(table, i, noOfPlayers);
-			else if (answer == 1)
+			cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | " << endl;
+			string answer;
+			do
+			{
+				cin >> answer;
+			} while (answer.compare("1") != 0 && answer.compare("2") != 0);
+
+			if (answer.compare("2") == 0) removePlayer(table, i, noOfPlayers);
+			else if (answer.compare("1") == 0)
 			{
 				cout << "How much would you like to rebuy for? (min. 50, max. 5000) ";
-				checkValidInput_buyIn(table[i].bankroll);
+				string answer;
+				checkValidInput_buyIn(answer);
+				table[i].bankroll = stoi(answer);
 			}
 		}
 
