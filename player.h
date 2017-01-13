@@ -50,8 +50,25 @@ void resetScore(player &P)
 void dealCard(player &P, unsigned int &cardIndex, unsigned int &pocketIndex)
 {
 	P.pocket[pocketIndex] = deck[cardIndex];
-	if (faceCard(deck[cardIndex])) P.score = P.score + 10;
-	else P.score = P.score + P.pocket[pocketIndex].rank;
+
+	if (faceCard(P.pocket[pocketIndex]))
+	{
+		P.score = P.score + 10;
+		if (P.softScore) P.softScore += 10;
+	}
+
+	else if (P.pocket[pocketIndex].rank == 1)
+	{
+		if (P.softScore == 0) P.softScore += P.score + 1;
+		P.score += 11;
+	}
+
+	else
+	{
+		P.score = P.score + P.pocket[pocketIndex].rank;
+		if (P.softScore) P.softScore += P.pocket[pocketIndex].rank;
+	}
+
 	pocketIndex++;
 	cardIndex++;
 }
@@ -77,6 +94,13 @@ void showPocket(player P, unsigned int pocketIndex)
 		cout << "of ";
 		cout << P.pocket[i].suit << ' ' << '|' << ' ';
 	}
+}
+
+void getScore(player P)
+{
+	if (P.softScore) 
+		cout << "(SCORE: " << P.score << " / soft: " << P.softScore << ") " << endl;
+	else cout << "(SCORE: " << P.score << ')' << ' ' << endl;
 }
 
 void housePlay(player &house, unsigned int &cardIndex)
@@ -452,6 +476,26 @@ void checkForRebuy(player table[4], unsigned int noOfPlayers)
 			string answer;
 			checkValidInput_buyIn(answer);
 			table[i].bankroll = stoi(answer);
+		}
+	}
+}
+
+bool secondChance(player &P, unsigned int bets[4], unsigned int pocketIndex, unsigned int playerIndex)
+{
+	{
+		if (P.softScore)
+		{
+			P.score = P.softScore;
+			P.softScore = 0;
+			return true;
+		}
+
+		else
+		{
+			showPocket(P, pocketIndex);
+			getScore(P);
+			cout << P.name << ", you are busted! (BANKROLL: " << P.bankroll << ')' << endl;
+			bets[playerIndex] = 0;
 		}
 	}
 }

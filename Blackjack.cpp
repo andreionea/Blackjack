@@ -90,7 +90,7 @@ START:
 				BEGIN_HAND:
 
 					showPocket(table[playerIndex], pocketIndex);
-					cout << "(SCORE: " << table[playerIndex].score << ')' << ' ' << endl;
+					getScore(table[playerIndex]);
 
 					getOption(table[playerIndex], pocketIndex, splitPossible);
 
@@ -100,14 +100,8 @@ START:
 
 					if (!processOption(option, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
 
-					if (table[playerIndex].score > 21)
-					{
-						showPocket(table[playerIndex], pocketIndex);
-						cout << ' ' << "(SCORE: " << ' ' << table[playerIndex].score << ')';
-						cout << endl;
-						cout << table[playerIndex].name << ", you are busted! (BANKROLL: " << table[playerIndex].bankroll << ')' << endl;
-						bets[playerIndex] = 0;
-					}
+					if (bust(table[playerIndex]))
+					if(secondChance(table[playerIndex], bets, pocketIndex, playerIndex) == true) goto BEGIN_HAND;
 
 					system("pause");
 				}
