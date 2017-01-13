@@ -36,7 +36,9 @@ START:
 	player house;
 	house.score = 0;
 	house.softScore = 0;
-	bool rig = true;
+	bool rig = false;
+	unsigned int rigTimer;
+	setRigTimer(rigTimer);
 
 	unsigned int cardIndex = 0;
 	unsigned int playerIndex = 0;
@@ -47,6 +49,12 @@ START:
 	{
 
 		system("cls");
+
+		if (rigTimer == 0)
+		{
+			rig = true;
+			setRigTimer(rigTimer);
+		}
 
 		cout << "Shuffling deck..." << endl;
 		shuffleDeck();
@@ -59,6 +67,8 @@ START:
 		{
 			system("cls");
 
+			getRig(rig, table);
+			
 			if (!isSeatEmpty(table, playerIndex))
 			{
 				bool stand = false;
@@ -163,6 +173,7 @@ START:
 
 		playerIndex = 0;
 		cardIndex = 0;
+		rig = false;
 
 		if (isTableEmpty(table)) 
 		if (replay() == true) goto START;
@@ -172,6 +183,9 @@ START:
 			Sleep(2000);
 			quit = true;
 		}
+
+		rigTimer--;
+
 	}
 
 	return 0;

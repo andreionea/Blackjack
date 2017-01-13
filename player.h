@@ -192,6 +192,22 @@ void rigPlay(player &house, unsigned int scoreToBeat, unsigned int cardIndex, un
 	}
 }
 
+void setRigTimer(unsigned int &rigTimer)
+{
+	random_device rd;
+	rigTimer = rd() % 8 + 7;
+}
+
+void getRig(bool &rig, player table[4])
+{
+	if (rig == false)
+	{
+		random_device rd;
+		float chance = rd() % 4 + 1;
+
+		if (chance >= 0 && chance <= 1) rig = true;
+	}
+}
 
 player table[4];
 
