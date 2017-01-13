@@ -20,14 +20,15 @@ struct player
 
 void newPlayer(player &P)
 {
-	cout << "New player's name: " << endl;
+	cout << "New player's name: ";
 	cin.get();
 	cin.get(P.name, 30);
-	cout << "How much would you like to buy-in for, " << P.name << "? (min. 50, max. 5000) " << endl;
+	cout << "How much would you like to buy-in for, " << P.name << "? (min. 50, max. 5000) ";
 	string answer;
 	checkValidInput_buyIn(answer);
 	P.bankroll = stoi(answer);
 	cout << "Good luck, " << P.name << "!" << endl;
+	system("pause");
 
 	P.score = 0;
 	P.softScore = 0;
@@ -223,7 +224,7 @@ void showdown(player table[4], player house, unsigned int bets[4], unsigned int 
 		{
 			cout << table[i].name << ", that's a push! ";
 			table[i].bankroll += bets[i];
-			cout << "(BANKROLL: " << table[i].bankroll << endl;
+			cout << "(BANKROLL: " << table[i].bankroll << ") " << endl;
 		}
 
 		else if (table[i].score > house.score)
@@ -279,7 +280,7 @@ void addPlayers(string &noOfPlayers)
 	for (unsigned int i = 0; i < noOfPlayers_number; i++) newPlayer(table[i]);
 }
 
-inline bool isInteger(const std::string & s)
+inline bool isInteger(const string &s)
 {
 	if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
 
@@ -427,7 +428,45 @@ bool isTableEmpty(player table[4])
 
 void removePlayer(player table[4], unsigned int playerIndex, unsigned int &noOfPlayers)
 {
-	cout << "REMOVING PLAYER " << table[playerIndex].name << endl;
+	cout << "REMOVING PLAYER: " << table[playerIndex].name << endl;
 	emptySeat(playerIndex, table);
 	cout << "PLAYER REMOVED " << endl;
+}
+
+void checkForRebuy(player table[4], unsigned int noOfPlayers)
+{
+	for (unsigned int i = 0; i < noOfPlayers; i++)
+	if (table[i].bankroll == 0 && table[i].skip == false)
+	{
+		cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | " << endl;
+		string answer;
+		do
+		{
+			cin >> answer;
+		} while (answer.compare("1") != 0 && answer.compare("2") != 0);
+
+		if (answer.compare("2") == 0) removePlayer(table, i, noOfPlayers);
+		else if (answer.compare("1") == 0)
+		{
+			cout << "How much would you like to rebuy for? (min. 50, max. 5000) ";
+			string answer;
+			checkValidInput_buyIn(answer);
+			table[i].bankroll = stoi(answer);
+		}
+	}
+}
+
+bool replay()
+{
+	system("cls");
+	cout << "No more players left. Add players? (y/n) ";
+	string answer;
+	do
+	{
+		cin >> answer;
+		if (answer.compare("y") == 0) return true;
+		else if (answer.compare("n") == 0) return false;
+		else cout << "Bad input! Please type 'y' or 'n' ";
+
+	} while (answer.compare("y") != 0 && answer.compare("n") != 0);
 }

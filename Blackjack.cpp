@@ -4,6 +4,7 @@
 #include "deck.h"
 #include "player.h"
 #include<random>
+#include<Windows.h>
 using namespace std;
 
 
@@ -93,11 +94,11 @@ START:
 
 					getOption(table[playerIndex], pocketIndex, splitPossible);
 
-					string option;
-					checkValidInput_option(option, pocketIndex, splitPossible);
-					unsigned int option_number = stoi(option);
+					string option_dummy;
+					checkValidInput_option(option_dummy, pocketIndex, splitPossible);
+					unsigned int option = stoi(option_dummy);
 
-					if (!processOption(option_number, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
+					if (!processOption(option, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
 
 					if (table[playerIndex].score > 21)
 					{
@@ -135,47 +136,19 @@ START:
 			resetScore(house);
 		}
 
-		for (unsigned int i = 0; i < noOfPlayers; i++)
-		if (table[i].bankroll == 0 && table[i].skip == false)
-		{
-			cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | " << endl;
-			string answer;
-			do
-			{
-				cin >> answer;
-			} while (answer.compare("1") != 0 && answer.compare("2") != 0);
-
-			if (answer.compare("2") == 0) removePlayer(table, i, noOfPlayers);
-			else if (answer.compare("1") == 0)
-			{
-				cout << "How much would you like to rebuy for? (min. 50, max. 5000) ";
-				string answer;
-				checkValidInput_buyIn(answer);
-				table[i].bankroll = stoi(answer);
-			}
-		}
+		checkForRebuy(table, noOfPlayers);
 
 		playerIndex = 0;
 		cardIndex = 0;
 
-		if (isTableEmpty(table))
+		if (isTableEmpty(table)) 
+		if (replay() == true) goto START;
+		else
 		{
-			system("cls");
-			cout << "No more players left. Add players? (y/n) ";
-			string answer;
-			do
-			{
-				cin >> answer;
-				if (answer.compare("y" ) == 0) goto START;
-				else if (answer.compare("n") == 0)
-				{
-					cout << "Thank you for playing! " << endl;
-					quit = true;
-				}
-				else cout << "Bad input! Please type 'y' or 'n' ";
-			} while (answer.compare("y") != 0 && answer.compare("n") != 0);
+			cout << "Thank you for playing! " << endl;
+			quit = true;
 		}
-
+			
 		system("pause");
 	}
 
