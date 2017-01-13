@@ -1,44 +1,56 @@
 #include<iostream>
 #include<string.h>
-#include<string>
 #include "deck.h"
 #include "player.h"
 #include<random>
-#include<Windows.h>
 using namespace std;
 
+void play(unsigned int noOfPlayers, player P[4], bool &quit);
+void dealCard(player currentPlayer, unsigned int &cardIndex);
+void showPocket(player currentPlayer, unsigned int pocketIndex, unsigned int seat);
 
 int main(int argc, char* args[])
 {
-	system("color 0F");
-	system("cls");
+	system("color a");
 
-START:
+	unsigned int seat = 0;
 
-	bool quit = false;
+	while (seat < 4)
+	{
+		cout << "Add player? (y/n) ";
+		char answer;
+		cin >> answer;
 
-	cout << "Generating deck..." << endl;
-	generateDeck();
-	cout << "Deck generated!" << endl;
+		if (answer == 'y')
+		{
+			player new_player;
+			new_player.bankroll = 0;
+			new_player.score = 0;
+			new_player.softScore = 0;
+			new_player.splitScore = 0;
+			new_player.splitSoftScore = 0;
+			newPlayer(new_player);
+			P[seat] = new_player;
+			seat++;
+		}
 
-	initializeTable(table);
+		else break;
+
+	}
+
+	bool quit;
+
+	if (seat)
+	{
+		cout << "Generating deck..." << endl;
+		generateDeck();
+		cout << "Deck generated!" << endl;
+		quit = false;
+	}
 
 	system("pause");
-	system("cls");
 
-	unsigned int noOfPlayers;
-	string noOfPlayers_dummy;
-
-	addPlayers(noOfPlayers_dummy);
-	noOfPlayers = stoi(noOfPlayers_dummy);
-
-	player house;
-	house.score = 0;
-
-	unsigned int cardIndex = 0;
-	unsigned int playerIndex = 0;
-	unsigned int bets[4];
-
+START:
 
 	while (!quit)
 	{
@@ -46,105 +58,101 @@ START:
 		system("cls");
 
 		cout << "Shuffling deck..." << endl;
-		shuffleDeck();
-		cout << "Deck shuffled!..." << endl;
 
-		system("pause");
-		system("cls");
+		random_device rd;
 
+		int firstBreak = rd() % 22 + 15; 
+		int secondBreak = rd() % 22 + 15;
+		int riffleBreak = rd() % 22 + 15;
 
-		while (playerIndex < noOfPlayers)
+		for (unsigned int count = 0; count <= 2; count++)
 		{
-			system("cls");
-
-			if (table[playerIndex].skip == false)
-			{
-				bool stand = false;
-				bool splitPossible = false;
-				bool split = false;
-				unsigned int pocketIndex = 0;
-
-				cout << table[playerIndex].name << ", place your bet! ";
-
-				string bet;
-				checkValidInput_bet(bet, table[playerIndex].bankroll);
-				bets[playerIndex] = stoi(bet);
-
-				table[playerIndex].bankroll -= bets[playerIndex];
-
-				dealCard(table[playerIndex], cardIndex, pocketIndex);
-				dealCard(table[playerIndex], cardIndex, pocketIndex);
-
-				if (table[playerIndex].pocket[0].rank == table[playerIndex].pocket[1].rank) splitPossible = true;
-
-				if (table[playerIndex].score == 21)
-				{
-					cout << "BLACKJACK!!!!";
-					table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
-					table[playerIndex].skip = true;
-				}
-
-				while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
-				{
-
-				BEGIN_HAND:
-
-					showPocket(table[playerIndex], pocketIndex);
-					getScore(table[playerIndex]);
-
-					getOption(table[playerIndex], pocketIndex, splitPossible);
-
-					string option_dummy;
-					checkValidInput_option(option_dummy, pocketIndex, splitPossible);
-					unsigned int option = stoi(option_dummy);
-
-					if (!processOption(option, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
-
-					if (bust(table[playerIndex]))
-					if(secondChance(table[playerIndex], bets, pocketIndex, playerIndex) == true) goto BEGIN_HAND;
-
-					system("pause");
-				}
-			}
-
-			playerIndex++;
+			cutDeck(firstBreak);
+			cutDeck(secondBreak);
+			riffleShuffle(riffleBreak);
 		}
 
-		bool allPlayersBust = true;
-		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = false;
+		cout << "Deck shuffled!" << endl;
 
-		if (!allPlayersBust)
-		{
-			system("cls");
+		play(seat, P, quit);
 
-			housePlay(house, cardIndex);
-
-			showdown(table, house, bets, noOfPlayers);
-
-			system("pause");
-		}
-
-		for (unsigned int i = 0; i < noOfPlayers; i++)
-		{
-			resetScore(table[i]);
-			resetScore(house);
-		}
-
-		checkForRebuy(table, noOfPlayers);
-
-		playerIndex = 0;
-		cardIndex = 0;
-
-		if (isTableEmpty(table)) 
-		if (replay() == true) goto START;
-		else
-		{
-			cout << "Thank you for playing! " << endl;
-			quit = true;
-		}
-			
 		system("pause");
 	}
 
 	return 0;
 }
+
+
+void play(unsigned int noOfPlayers, player P[4], bool &quit)
+{
+	unsigned int seat = 0;
+	unsigned int cardIndex = 0;
+
+	while (seat < noOfPlayers)
+	{
+		unsigned int pocketIndex = 0;
+
+		dealCard(P[seat], cardIndex); pocketIndex++;
+		if (faceCard(P[seat].pocket[pocketIndex])) P[seat].score += 10;
+		else P[seat].score += P[seat].pocket[pocketIndex].rank;
+		
+
+		dealCard(P[seat], cardIndex); pocketIndex++;
+		if (faceCard(P[seat].pocket[pocketIndex])) P[seat].score += 10;
+		else P[seat].score += P[seat].pocket[pocketIndex].rank;
+		
+
+		showPocket(P[seat], pocketIndex, seat);
+
+		if (P[seat].score == 21)
+		{
+			cout << "BLACKJACK!!!" << endl;
+			P[seat].bankroll += P[seat].bankroll;
+		}
+
+		else
+		{
+			if ((P[seat].pocket[pocketIndex - 1].rank == P[seat].pocket[pocketIndex].rank) && (P[seat].pocket[pocketIndex - 1].suit == P[seat].pocket[pocketIndex].suit))
+			{
+				cout << P[seat].name << ", split? (y/n)" << endl;
+			}
+		}
+
+		seat = 8;
+	}
+
+	quit = true;
+}
+
+void dealCard(player currentPlayer, unsigned int &cardIndex)
+{
+	currentPlayer.pocket[cardIndex] = deck[cardIndex];
+	cardIndex++;
+}
+
+
+void showPocket(player currentPlayer, unsigned int pocketIndex, unsigned int seat)
+{
+	cout << currentPlayer.name << ", you hold: ";
+	for (unsigned int i = 0; i < pocketIndex; i++)
+	{
+		switch (currentPlayer.pocket[i].rank)
+		{
+		case 1: cout << "Ace of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		case 11: cout << "Jack of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		case 12: cout << "Queen of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		case 13: cout << "King of" << ' ' << currentPlayer.pocket[i].suit;
+			break;
+		default: cout << currentPlayer.pocket[i].rank << ' ' << "of" << ' ' << currentPlayer.pocket[i].suit << ' ';
+		}	
+
+		if (i != pocketIndex - 1) cout << ',' << ' ';
+	}
+	cout <<' ' << '(' << currentPlayer.score << ')';
+	cout << endl;
+}
+
+
