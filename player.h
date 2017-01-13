@@ -1,6 +1,7 @@
 ﻿#include<iostream>
 #include<string.h>
 #include<stdlib.h>
+
 using namespace std;
 
 void checkValidInput_bet(string &input, unsigned int bankroll);
@@ -111,6 +112,7 @@ void housePlay(player &house, unsigned int &cardIndex, unsigned int &pocketIndex
 	while (house.score < 17)
 	{
 		dealCard(house, cardIndex, pocketIndex);
+		_sleep(2000);
 		cout << "House holds: | ";
 		for (unsigned int i = 0; i < pocketIndex; i++)
 		{
@@ -488,7 +490,7 @@ void removePlayer(player table[4], unsigned int playerIndex, unsigned int &noOfP
 void checkForRebuy(player table[4], unsigned int noOfPlayers)
 {
 	for (unsigned int i = 0; i < noOfPlayers; i++)
-	if (table[i].bankroll == 0 && table[i].skip == false)
+	if (table[i].bankroll == 0 && isSeatEmpty(table, i) == false)
 	{
 		cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | " << endl;
 		string answer;

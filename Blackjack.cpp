@@ -58,7 +58,7 @@ START:
 		{
 			system("cls");
 
-			if (table[playerIndex].skip == false)
+			if (!isSeatEmpty(table, playerIndex))
 			{
 				bool stand = false;
 				bool splitPossible = false;
@@ -136,7 +136,7 @@ START:
 			}
 
 
-			system("pause");
+			Sleep(2000);
 			system("cls");
 
 			showdown(table, house, bets, noOfPlayers);
