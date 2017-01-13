@@ -36,6 +36,7 @@ START:
 	player house;
 	house.score = 0;
 	house.softScore = 0;
+	bool rig = true;
 
 	unsigned int cardIndex = 0;
 	unsigned int playerIndex = 0;
@@ -115,8 +116,15 @@ START:
 			playerIndex++;
 		}
 
+		unsigned int scoreToBeat = 17;
+
 		bool allPlayersBust = true;
-		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = false;
+		for (unsigned int i = 0; i < noOfPlayers; i++) 
+		if (bets[i])
+		{
+			allPlayersBust = false;
+			if (table[i].score != 21 && table[i].score > scoreToBeat) scoreToBeat = table[i].score;
+		}
 
 		if (!allPlayersBust)
 		{
@@ -124,7 +132,8 @@ START:
 
 			unsigned int housePocketIndex = 0;
 
-			housePlay(house, cardIndex, housePocketIndex);
+			if (rig == true) rigPlay(house, scoreToBeat, cardIndex, housePocketIndex);
+			else housePlay(house, cardIndex, housePocketIndex);
 
 			if (bust(house))
 			if (house.softScore)
@@ -132,7 +141,8 @@ START:
 				house.score = house.softScore;
 				house.softScore = 0;
 				
-				housePlay(house, cardIndex, housePocketIndex);
+				if(rig == false) housePlay(house, cardIndex, housePocketIndex);
+				else rigPlay(house, scoreToBeat, cardIndex, housePocketIndex);
 			}
 
 
