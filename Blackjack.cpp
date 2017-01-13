@@ -20,7 +20,7 @@ void checkValidInput_gameMode(string &gameMode)
 	
 		if (gameMode.compare("i") == 0)
 		{
-			cout << "1. Classic Blackjack: Aces play for high and for low. Blackjack plays 4 to 1. ";
+			cout << "1. Classic Blackjack: Aces play for high and for low. Blackjack pays 4 to 1. ";
 			cout << endl;
 			cout << "2. High Risk, High Reward: " << endl;
 			cout << '\t' << "- You play against a computer controlled Villain." << endl;
@@ -134,11 +134,15 @@ START:
 				{
 					showPocket(table[playerIndex], pocketIndex);
 					cout << "BLACKJACK!!!!";
-					table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
+
+					if(highRisk == false)table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
+					else table[playerIndex].bankroll *= 8;
+
 					cout << "BANKROLL: " << table[playerIndex].bankroll << endl;
 					table[playerIndex].skip = true;
 					for (unsigned int i = 0; i < 9; i++) systemLighting();
 					system("color 0F");
+					
 				}
 
 				while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
@@ -168,6 +172,9 @@ START:
 		}
 
 		unsigned int scoreToBeat = 17;
+
+		for (unsigned int i = 0; i < noOfPlayers; i++)
+		if (table[i].score > scoreToBeat && table[i].score < 21) scoreToBeat = table[i].score;
 
 		if (highRisk == true)
 		{
