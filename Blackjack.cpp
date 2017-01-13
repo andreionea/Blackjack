@@ -8,42 +8,6 @@
 #include<stdlib.h>
 using namespace std;
 
-void checkValidInput_gameMode(string &gameMode)
-{
-	bool ok;
-
-	do
-	{
-		ok = true;
-
-		cin >> gameMode;
-	
-		if (gameMode.compare("i") == 0)
-		{
-			cout << "1. Classic Blackjack: Aces play for high and for low. Blackjack pays 4 to 1. ";
-			cout << endl;
-			cout << "2. High Risk, High Reward: " << endl;
-			cout << '\t' << "- You play against a computer controlled Villain." << endl;
-			cout << '\t' << "- If you are busted, you pay 3 to 1. " << endl;
-			cout << '\t' << "- If you have higher score than Villain and none of you are busted and you beat the house, you get paid 4 to 1. " << endl;
-			cout << '\t' << "- If you have lower score than Villain and none of you are busted, you pay 6 to 1. " << endl;
-			cout << '\t' << "- If Villain is busted and you are not and you beat the house, you win 10 to 1. " << endl;
-			cout << '\t' << "- Blackjack pays 8 to 1. " << endl;
-			cout << '\t' << "- If Villain goes broke, your bankroll gets doubled. " << endl;
-			ok = false;
-			system("pause");
-		}
-
-		else if (gameMode.compare("2") != 0 && gameMode.compare("1") != 0)
-		{
-			cout << "Bad input! Please re-enter option: ";
-			ok = false;
-		}
-
-	} while (ok == false);
-
-	system("cls");
-}
 
 int main(int argc, char* args[])
 {
@@ -53,16 +17,6 @@ int main(int argc, char* args[])
 START:
 
 	bool quit = false;
-
-	cout << "Welcome! Please choose a game mode: " << endl;
-	cout << "| 1. Classic | 2. High Risk, High Reward | (hit 'i' for info) " << endl;
-
-	string gameMode;
-	checkValidInput_gameMode(gameMode);
-	
-	bool highRisk = false;
-
-	if (gameMode.compare("2") == 0) highRisk = true;
 
 	cout << "Generating deck..." << endl;
 	generateDeck();
@@ -83,16 +37,10 @@ START:
 	house.score = 0;
 	house.softScore = 0;
 
-	player villain;
-	strcpy_s(villain.name, "Villain");
-	villain.score = 0;
-	villain.softScore = 0;
-	villain.skip = false;
-	villain.bankroll = 5000;
-
 	unsigned int cardIndex = 0;
 	unsigned int playerIndex = 0;
 	unsigned int bets[4];
+
 
 	while (!quit)
 	{
@@ -134,15 +82,11 @@ START:
 				{
 					showPocket(table[playerIndex], pocketIndex);
 					cout << "BLACKJACK!!!!";
-
-					if(highRisk == false)table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
-					else table[playerIndex].bankroll *= 8;
-
+					table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
 					cout << "BANKROLL: " << table[playerIndex].bankroll << endl;
 					table[playerIndex].skip = true;
 					for (unsigned int i = 0; i < 9; i++) systemLighting();
 					system("color 0F");
-					
 				}
 
 				while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
@@ -162,7 +106,7 @@ START:
 					if (!processOption(option, table[playerIndex], bets, cardIndex, pocketIndex, playerIndex, stand)) goto BEGIN_HAND;
 
 					if (bust(table[playerIndex]))
-					if (secondChance(table[playerIndex], bets, pocketIndex, playerIndex, highRisk) == true) goto BEGIN_HAND;
+					if (secondChance(table[playerIndex], bets, pocketIndex, playerIndex) == true) goto BEGIN_HAND;
 
 					system("pause");
 				}
@@ -171,45 +115,8 @@ START:
 			playerIndex++;
 		}
 
-		unsigned int scoreToBeat = 17;
-
-		for (unsigned int i = 0; i < noOfPlayers; i++)
-		if (table[i].score > scoreToBeat && table[i].score < 21) scoreToBeat = table[i].score;
-
-		if (highRisk == true)
-		{
-			system("cls");
-
-			unsigned int villainPocketIndex = 0;
-			bool villainStand = false;
-
-			villainPlay(villain, cardIndex, villainPocketIndex, scoreToBeat, villainStand);
-
-			for (unsigned int i = 0; i < noOfPlayers; i++)
-			{
-				if (bust(table[i]))
-				{
-					cout << table[i].name << ", you must pay the villain " << 3 * bets[i] << endl;
-					villain.bankroll = villain.bankroll + 3 * bets[i];
-					table[i].bankroll = table[i].bankroll - 2 * bets[i];
-					bets[i] = 0;
-				}
-
-				else villainShowdown(villain, table, bets, i);
-			}
-			cout << "(Villain BANKROLL: " << villain.bankroll << ") " << endl;
-		}
-
-		system("pause");
-
 		bool allPlayersBust = true;
-		for (unsigned int i = 0; i < noOfPlayers; i++) 
-		if (bets[i])
-		{
-			allPlayersBust = false;
-
-			if (table[i].score > scoreToBeat) scoreToBeat = table[i].score;
-		}
+		for (unsigned int i = 0; i < noOfPlayers; i++) if (bets[i]) allPlayersBust = false;
 
 		if (!allPlayersBust)
 		{
@@ -232,21 +139,14 @@ START:
 			Sleep(2000);
 			system("cls");
 
-			showdown(table, house, bets, noOfPlayers, highRisk);
+			showdown(table, house, bets, noOfPlayers);
 
-		}
-
-		if (villain.bankroll <= 0)
-		{
-			for (unsigned int i = 0; i < noOfPlayers; i++) table[i].bankroll *= 2;
-			villain.bankroll = 5000;
 		}
 
 		for (unsigned int i = 0; i < noOfPlayers; i++)
 		{
 			resetScore(table[i]);
 			resetScore(house);
-			resetScore(villain);
 		}
 
 		checkForRebuy(table, noOfPlayers);
@@ -259,6 +159,7 @@ START:
 		else
 		{
 			cout << "Thank you for playing! " << endl;
+			Sleep(2000);
 			quit = true;
 		}
 	}

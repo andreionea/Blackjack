@@ -7,13 +7,11 @@ using namespace std;
 void checkValidInput_bet(string &input, unsigned int bankroll);
 void checkValidInput_buyIn(string &bankroll);
 inline bool isInteger(const string &s);
-float getOdds(unsigned int actualScore, unsigned int lineScore, unsigned int cardIndex);
-
 
 struct player
 {
 	char name[30];
-	int bankroll;
+	unsigned int bankroll;
 	unsigned int score;
 	unsigned int softScore;
 	unsigned int splitScore;
@@ -21,8 +19,6 @@ struct player
 	card pocket[9];
 	bool skip;
 };
-
-void playerStand(bool &stand, player P, unsigned int pocketIndex);
 
 void newPlayer(player &P)
 {
@@ -143,37 +139,6 @@ void housePlay(player &house, unsigned int &cardIndex, unsigned int &pocketIndex
 	}
 }
 
-void villainPlay(player &villain, unsigned int &cardIndex, unsigned int &pocketIndex, unsigned int scoreToBeat, bool &stand)
-{
-	dealCard(villain, cardIndex, pocketIndex);
-	dealCard(villain, cardIndex, pocketIndex);
-	showPocket(villain, pocketIndex);
-	getScore(villain);
-	_sleep(2000);
-
-	while (getOdds(villain.score, scoreToBeat, cardIndex) > 0.5)
-	{
-		dealCard(villain, cardIndex, pocketIndex);
-		showPocket(villain, pocketIndex);
-		getScore(villain);
-		_sleep(2000);
-	}
-
-	if (getOdds(villain.score, scoreToBeat, cardIndex) <= 0.5)
-	while (villain.score <= scoreToBeat - 2)
-	{
-		dealCard(villain, cardIndex, pocketIndex);
-		showPocket(villain, pocketIndex);
-		getScore(villain);
-		_sleep(2000);
-	}
-
-	if (bust(villain)) cout << "Villain is busted... " << endl;
-	else cout << "Villain stands..." << endl;
-	playerStand(stand, villain, pocketIndex);
-	system("pause");
-}
-
 player table[4];
 
 void emptySeat(unsigned int playerIndex, player table[4])
@@ -202,9 +167,12 @@ void playerStand(bool &stand, player P, unsigned int pocketIndex)
 {
 	stand = true;
 
-	//showPocket(P, pocketIndex);
-	//getScore(P);
-	cout << endl;
+	if (P.score <= 21)
+	{
+		showPocket(P, pocketIndex);
+		getScore(P);
+		cout << endl;
+	}
 }
 
 void playerDoubleDown(player &P, unsigned int bets[4], unsigned int playerIndex, unsigned int pocketIndex, unsigned int &cardIndex, bool &stand)
@@ -268,10 +236,8 @@ void systemLighting()
 	_sleep(100);
 }
 
-void showdown(player table[4], player house, unsigned int bets[4], unsigned int noOfPlayers, bool highRisk)
+void showdown(player table[4], player house, unsigned int bets[4], unsigned int noOfPlayers)
 {
-	for (unsigned int i = 0; i < noOfPlayers; i++)
-	if (table[i].bankroll < 0) table[i].bankroll = 0;
 
 	if (bust(house))
 	{
@@ -281,8 +247,7 @@ void showdown(player table[4], player house, unsigned int bets[4], unsigned int 
 		for (unsigned int i = 0; i < noOfPlayers; i++)
 		if (bets[i])
 		{
-			if (highRisk == false) table[i].bankroll += 2 * bets[i];
-			else table[i].bankroll += bets[i];
+			table[i].bankroll += 2 * bets[i];
 			cout << table[i].name << ", you won! (BANKROLL: " << table[i].bankroll << ')' << endl;
 			for (unsigned int i = 0; i < 7; i++) systemLighting();
 			system("color 0F");
@@ -298,9 +263,7 @@ void showdown(player table[4], player house, unsigned int bets[4], unsigned int 
 		if (table[i].score == house.score)
 		{
 			cout << table[i].name << ", that's a push! ";
-
-			if (highRisk == false) table[i].bankroll += bets[i];
-
+			table[i].bankroll += bets[i];
 			cout << "(BANKROLL: " << table[i].bankroll << ") " << endl;
 			_sleep(3000);
 			system("cls");
@@ -309,10 +272,7 @@ void showdown(player table[4], player house, unsigned int bets[4], unsigned int 
 		else if (table[i].score > house.score)
 		{
 			cout << table[i].name << " (" << table[i].score << "), you win! CONGRATULATIONS!!! ";
-
-			if (highRisk == false) table[i].bankroll = table[i].bankroll + 2 * bets[i];
-			else table[i].bankroll += bets[i];
-
+			table[i].bankroll = table[i].bankroll + 2 * bets[i];
 			cout << "(BANKROLL: " << table[i].bankroll << ')' << endl;
 			for (unsigned int i = 0; i < 7; i++) systemLighting();
 			system("color 0F");
@@ -530,7 +490,7 @@ void removePlayer(player table[4], unsigned int playerIndex, unsigned int &noOfP
 void checkForRebuy(player table[4], unsigned int noOfPlayers)
 {
 	for (unsigned int i = 0; i < noOfPlayers; i++)
-	if (table[i].bankroll <= 0 && isSeatEmpty(table, i) == false)
+	if (table[i].bankroll == 0 && isSeatEmpty(table, i) == false)
 	{
 		cout << table[i].name << ", would you like to rebuy? " << endl << " | 1. Yes | 2. No | " << endl;
 		string answer;
@@ -550,7 +510,7 @@ void checkForRebuy(player table[4], unsigned int noOfPlayers)
 	}
 }
 
-bool secondChance(player &P, unsigned int bets[4], unsigned int pocketIndex, unsigned int playerIndex, bool highRisk)
+bool secondChance(player &P, unsigned int bets[4], unsigned int pocketIndex, unsigned int playerIndex)
 {
 	{
 		if (P.softScore)
@@ -565,7 +525,7 @@ bool secondChance(player &P, unsigned int bets[4], unsigned int pocketIndex, uns
 			showPocket(P, pocketIndex);
 			getScore(P);
 			cout << P.name << ", you are busted! (BANKROLL: " << P.bankroll << ')' << endl;
-			if (highRisk == false) bets[playerIndex] = 0;
+			bets[playerIndex] = 0;
 			return false;
 		}
 	}
@@ -584,44 +544,4 @@ bool replay()
 		else cout << "Bad input! Please type 'y' or 'n' ";
 
 	} while (answer.compare("y") != 0 && answer.compare("n") != 0);
-}
-
-float getOdds(unsigned int actualScore, unsigned int scoreToBeat, unsigned int cardIndex)
-{
-	unsigned int goodCards = 0;
-
-	for (unsigned int i = cardIndex; i < 52; i++)
-	if (getCardScore(deck[i]) + actualScore <= 21 && getCardScore(deck[i]) + actualScore >= scoreToBeat)  goodCards++;
-
-	float chance = (goodCards * 1.0 / (52 - cardIndex - goodCards));
-
-	return chance;
-}
-
-void villainShowdown(player &villain, player table[4], unsigned int bets[4], unsigned int i)
-{
-		if (bust(villain))
-		{
-			bets[i] = 5 * bets[i];
-			villain.bankroll -= bets[i];
-			table[i].bankroll += bets[i];
-		}
-
-		else if (table[i].score > villain.score)
-		{
-			bets[i] = 4 * bets[i];
-			villain.bankroll -= bets[i];
-		}
-
-		else
-		{
-			villain.bankroll += 6 * bets[i];
-			table[i].bankroll -= 5 * bets[i];
-			if (table[i].bankroll < 0) table[i].bankroll = 0;
-			bets[i] = 0;
-			cout << "Villain has beaten you, " << table[i].name << " (BANKROLL: " << table[i].bankroll << ") " << endl;
-		}
-
-		if (table[i].bankroll <= 0) table[i].bankroll = 0;
-
 }
