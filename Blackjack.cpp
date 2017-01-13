@@ -5,6 +5,7 @@
 #include "player.h"
 #include<random>
 #include<Windows.h>
+#include<stdlib.h>
 using namespace std;
 
 
@@ -48,9 +49,8 @@ START:
 
 		cout << "Shuffling deck..." << endl;
 		shuffleDeck();
-		cout << "Deck shuffled!..." << endl;
 
-		system("pause");
+		Sleep(3000);
 		system("cls");
 
 
@@ -80,9 +80,13 @@ START:
 
 				if (table[playerIndex].score == 21)
 				{
+					showPocket(table[playerIndex], pocketIndex);
 					cout << "BLACKJACK!!!!";
 					table[playerIndex].bankroll = table[playerIndex].bankroll + bets[playerIndex] * 4;
+					cout << "BANKROLL: " << table[playerIndex].bankroll << endl;
 					table[playerIndex].skip = true;
+					for (unsigned int i = 0; i < 9; i++) systemLighting();
+					system("color 0F");
 				}
 
 				while (stand == false && bust(table[playerIndex]) == false && table[playerIndex].skip == false)
@@ -131,9 +135,12 @@ START:
 				housePlay(house, cardIndex, housePocketIndex);
 			}
 
-			showdown(table, house, bets, noOfPlayers);
 
 			system("pause");
+			system("cls");
+
+			showdown(table, house, bets, noOfPlayers);
+
 		}
 
 		for (unsigned int i = 0; i < noOfPlayers; i++)
@@ -152,10 +159,9 @@ START:
 		else
 		{
 			cout << "Thank you for playing! " << endl;
+			Sleep(2000);
 			quit = true;
 		}
-			
-		system("pause");
 	}
 
 	return 0;
