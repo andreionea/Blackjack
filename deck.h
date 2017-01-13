@@ -205,3 +205,10 @@ void dismiss(listNode_card* &front)
 		delete aux;
 	}
 }
+
+
+unsigned int getCardScore(card C)
+{
+	if (faceCard(C)) return 10;
+	else return C.rank;
+}
